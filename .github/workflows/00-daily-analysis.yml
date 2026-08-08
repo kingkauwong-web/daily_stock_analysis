@@ -23,6 +23,10 @@ on:
         default: false
         type: boolean
 
+# GitHub Models：使用工作流内置令牌，不需要额外 API Key
+permissions:
+  contents: read
+  models: read
 # 并发控制：同一时间只运行一个分析任务
 concurrency:
   group: stock-analysis
@@ -109,10 +113,11 @@ jobs:
           AIHUBMIX_KEY: ${{ secrets.AIHUBMIX_KEY }}
 
           # OpenAI 兼容 API（备选）
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # 默认使用 GitHub Models 免费额度；如将来配置自己的 OpenAI Key，会自动优先使用自有配置
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || github.token }}
           OPENAI_API_KEYS: ${{ secrets.OPENAI_API_KEYS }}
-          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || secrets.OPENAI_BASE_URL }}
-          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || secrets.OPENAI_MODEL }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || secrets.OPENAI_BASE_URL || 'https://models.github.ai/inference' }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || secrets.OPENAI_MODEL || 'openai/gpt-4.1-mini' }}
 
           # DeepSeek
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
