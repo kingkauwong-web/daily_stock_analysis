@@ -65,7 +65,6 @@ jobs:
           mkdir -p data logs reports
       
       - name: 检查 Gemini 模型可用性
-        if: ${{ env.GEMINI_API_KEY != '' }}
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL || secrets.GEMINI_MODEL || 'gemini-2.5-flash' }}
