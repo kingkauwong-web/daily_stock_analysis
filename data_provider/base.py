@@ -1883,6 +1883,16 @@ class DataFetcherManager:
                         )
                         quote = self._call_fetcher_method(fetcher, 'get_realtime_quote', stock_code, source="tencent")
                 
+                elif source == "yfinance":
+                    fetcher = self._get_fetcher_by_name("YfinanceFetcher", capability="realtime_quote")
+                    if fetcher is not None and hasattr(fetcher, 'get_realtime_quote'):
+                        record_provider_run_started(
+                            data_type="realtime_quote",
+                            provider=fetcher.name,
+                            operation="get_realtime_quote",
+                        )
+                        quote = self._call_fetcher_method(fetcher, 'get_realtime_quote', raw_stock_code or stock_code)
+
                 elif source == "tushare":
                     fetcher = self._get_fetcher_by_name("TushareFetcher", capability="realtime_quote")
                     if fetcher is not None and hasattr(fetcher, 'get_realtime_quote'):
