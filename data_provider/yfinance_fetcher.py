@@ -86,6 +86,16 @@ class YfinanceFetcher(BaseFetcher):
         return is_suffix_market_symbol(stock_code, "jp") or is_suffix_market_symbol(stock_code, "kr")
 
     @staticmethod
+    def _is_cn_stock(stock_code: str) -> bool:
+        """Return True for six-digit mainland China stock codes."""
+        code = (stock_code or "").strip().upper()
+        if code.startswith(("SH", "SZ", "BJ")):
+            code = code[2:]
+        if code.endswith((".SS", ".SZ", ".BJ")):
+            code = code[:-3]
+        return code.isdigit() and len(code) == 6
+
+    @staticmethod
     def _is_tw_suffix_stock(stock_code: str) -> bool:
         """Return True for supported Taiwan suffix-only Yahoo symbols (TWSE `.TW` / TPEx `.TWO`).
 
@@ -815,13 +825,14 @@ class YfinanceFetcher(BaseFetcher):
                 index_name=index_name,
             )
 
-        # 仅处理美股股票或 JP/KR/TW suffix-only 股票
+        # 处理美股、A股以及 JP/KR/TW suffix-only 股票
         if not (
             self._is_us_stock(stock_code)
+            or self._is_cn_stock(stock_code)
             or self._is_jp_kr_suffix_stock(stock_code)
             or self._is_tw_suffix_stock(stock_code)
         ):
-            logger.debug(f"[Yfinance] {stock_code} 不是美股或日韩 suffix 代码，跳过")
+            logger.debug(f"[Yfinance] {stock_code} 不是支持的股票代码，跳过")
             return None
 
         try:
