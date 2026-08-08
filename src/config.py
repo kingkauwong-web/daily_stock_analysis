@@ -3262,7 +3262,11 @@ class Config:
             if provider == "deepseek":
                 return any(k and len(k) >= 8 for k in (self.deepseek_api_keys or []))
             if provider == "openai":
-                return any(k and len(k) >= 8 for k in (self.openai_api_keys or []))
+                # Google Gemini exposes an OpenAI-compatible endpoint. When the
+                # base URL is explicitly Google, reuse the Gemini key without
+                # requiring users to duplicate it as an OPENAI secret.
+                key_pool = self.gemini_api_keys if "generativelanguage.googleapis.com" in (self.openai_base_url or "").lower() else self.openai_api_keys
+                return any(k and len(k) >= 8 for k in (key_pool or []))
             return False
 
         configured_agent_primary_model = bool((self.agent_litellm_model or "").strip())
@@ -3681,7 +3685,8 @@ def get_api_keys_for_model(model: str, config: Config) -> List[str]:
     if provider == "deepseek":
         return [k for k in config.deepseek_api_keys if k and len(k) >= 8]
     if provider == "openai":
-        return [k for k in config.openai_api_keys if k and len(k) >= 8]
+        key_pool = config.gemini_api_keys if "generativelanguage.googleapis.com" in (config.openai_base_url or "").lower() else config.openai_api_keys
+        return [k for k in key_pool if k and len(k) >= 8]
     # Other LiteLLM-native providers – API key resolved from env vars
     return []
 
